@@ -55,11 +55,11 @@ These properties are described in the following table:
 Property               Type           Default                   Description
 =====================  =============  ========================  ========================================================
 ``enabled``            Boolean        ``true``                  Set to false to disable the plugin entirely
-``whitelist``          List<String>   ``[]``                    A list of strings, which if present in the display name
+``whitelist``          List<String>   ``[]``                    A list of strings which if present in the display name
                                                                 of an artifact will prevent the plugin from rejecting
                                                                 any versions
-``rejectedVersions``   List<String>   ``["alpha", "beta", "m",  The list of strings, which if present in the version of
-                                      "snap", "latest"]``       an artifact will cause them to be rejected
+``rejectedVersions``   List<String>   ``["alpha", "beta", "m",  A list of strings which if present in the version of an
+                                      "snap", "latest"]``       artifact will cause it to be rejected (case insensitive)
 =====================  =============  ========================  ========================================================
 
 License
