@@ -55,7 +55,7 @@ gradlePlugin {
 pluginBundle {
     website = 'https://github.com/ADTRAN/gradle-betablocker-plugin'
     vcsUrl = 'https://github.com/ADTRAN/gradle-betablocker-plugin'
-    description = 'Gradle plugin to prevent non-stable dependencies from being inadvertently consumed by a project'
+    description = 'Gradle plugin to prevent non-stable versions of dependencies from being inadvertently consumed by a project'
     tags = ['dependencies']
     plugins {
         betablockerPlugin {
@@ -93,7 +93,7 @@ uploadArchives {
         pom.project {
             name "$artifact_group:$artifact_name"
             packaging 'jar'
-            description 'Gradle plugin to prevent non-stable dependencies from being inadvertently consumed by a project'
+            description 'Gradle plugin to prevent non-stable versions of dependencies from being inadvertently consumed by a project'
             url 'https://github.com/ADTRAN/gradle-betablocker-plugin'
 
             scm {

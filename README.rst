@@ -6,10 +6,9 @@
 Betablocker Plugin
 ==================
 
-.. _above:
-
-This Gradle plugin prevents dependencies (including transitives) which include a configurable list of patterns. It is
-intended to be used to block non-stable versions of dependencies from inadvertently being consumed by a project.
+This Gradle plugin rejects dependencies (including transitives) whose version string includes a configurable list of
+patterns. It is intended to be used to block non-stable versions of dependencies from inadvertently being consumed by a
+project.
 
 Setup
 =====
@@ -52,16 +51,16 @@ To configure the plugin, add a block like the following to your ``build.gradle``
 
 These properties are described in the following table:
 
-=====================  =============  ======================  ==========================================================
-Property               Type           Default                 Description
-=====================  =============  ======================  ==========================================================
-``enabled``            Boolean        true                    Set to false to disable the plugin entirely
-``rejectedVersions``   List<String>   ["alpha", "beta", "m",  The list of strings, which if present in the version of an
-                                      "snap", "latest"]       artifact will cause them to be rejected
-``whitelist``          List<String>   []                      A list of strings, which if present in the display name of
-                                                              an artifact will prevent the plugin from rejecting any
-                                                              versions
-=====================  =============  ======================  ==========================================================
+=====================  =============  ========================  ========================================================
+Property               Type           Default                   Description
+=====================  =============  ========================  ========================================================
+``enabled``            Boolean        ``true``                  Set to false to disable the plugin entirely
+``whitelist``          List<String>   ``[]``                    A list of strings, which if present in the display name
+                                                                of an artifact will prevent the plugin from rejecting
+                                                                any versions
+``rejectedVersions``   List<String>   ``["alpha", "beta", "m",  The list of strings, which if present in the version of
+                                      "snap", "latest"]``       an artifact will cause them to be rejected
+=====================  =============  ========================  ========================================================
 
 License
 =======
