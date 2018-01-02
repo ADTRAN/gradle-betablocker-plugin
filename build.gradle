@@ -1,0 +1,151 @@
+/*
+ * Copyright 2018 ADTRAN, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+            mavenCentral()
+        }
+    }
+
+    dependencies {
+        classpath "com.netflix.nebula:gradle-dependency-lock-plugin:4.+"
+        classpath "net.saliman:gradle-cobertura-plugin:2.+"
+        classpath "com.gradle.publish:plugin-publish-plugin:0.9.7"
+    }
+}
+
+plugins {
+    id "nebula.dependency-lock" version "4.9.1"
+    id "net.saliman.cobertura" version "2.5.2"
+    id "groovy"
+    id "maven"
+    id "java-gradle-plugin"
+    id "com.gradle.plugin-publish" version "0.9.7"
+}
+
+group = artifact_group
+version = "${artifact_version}.${build_number}"
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+gradlePlugin {
+    plugins {
+        betablockerPlugin {
+            id = "${group}.${artifact_name}"
+            implementationClass = "com.adtran.BetablockerPlugin"
+        }
+    }
+}
+
+pluginBundle {
+    website = 'https://github.com/ADTRAN/gradle-betablocker-plugin'
+    vcsUrl = 'https://github.com/ADTRAN/gradle-betablocker-plugin'
+    description = 'Gradle plugin to prevent non-stable dependencies from being inadvertently consumed by a project'
+    tags = ['dependencies']
+    plugins {
+        betablockerPlugin {
+            id = "${group}.${artifact_name}"
+            displayName = 'Betablocker Plugin'
+        }
+    }
+}
+
+dependencyLock {
+    includeTransitives = true
+}
+task freeze(dependsOn: ['generateLock', 'saveLock'])
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile localGroovy()
+
+    testCompile 'junit:junit:4.12'
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: repo_url) {
+            authentication(userName: repo_username, password: repo_password)
+        }
+
+        pom.project {
+            name "$artifact_group:$artifact_name"
+            packaging 'jar'
+            description 'Gradle plugin to prevent non-stable dependencies from being inadvertently consumed by a project'
+            url 'https://github.com/ADTRAN/gradle-betablocker-plugin'
+
+            scm {
+                connection 'scm:git:https://github.com/ADTRAN/gradle-betablocker-plugin.git'
+                developerConnection 'scm:git:https://github.com/ADTRAN/gradle-betablocker-plugin.git'
+                url 'https://github.com/ADTRAN/gradle-betablocker-plugin'
+            }
+
+            licenses {
+                license {
+                    name 'Apache License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                }
+            }
+
+            developers {
+                developer {
+                    name 'Nathan Alderson'
+                    email 'nathan.alderson@adtran.com'
+                    organization 'ADTRAN, Inc.'
+                    organizationUrl 'http://www.adtran.com/'
+                }
+            }
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = "3.5.1"
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from groovydoc
+    from 'README.rst'
+}
+
+groovydoc.overviewText = resources.text.fromString('Please see <a href="README.rst">README.rst</a>')
+
+assemble.dependsOn("sourcesJar", "javadocJar")
+
+artifacts {
+    archives sourcesJar, javadocJar
+}
+
+def configureTestTask(Task task) {
+    task.outputs.upToDateWhen { false }
+    task.testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        stackTraceFilters "entryPoint"
+    }
+}
+configureTestTask(project.tasks.test)
