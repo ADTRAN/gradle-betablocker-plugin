@@ -70,6 +70,10 @@ dependencyLock {
 }
 task freeze(dependsOn: ['generateLock', 'saveLock'])
 
+cobertura {
+    coverageFormats = ['html', 'xml']
+}
+
 repositories {
     mavenCentral()
 }
