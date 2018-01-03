@@ -87,4 +87,12 @@ class TestBetablockerPlugin extends GroovyTestCase {
         }
         assertResolvedVersion("1.3.0-beta0", project)
     }
+
+    void testDisableCallable() {
+        def project = createProject {
+            project.betablocker.enabled = { false }
+            dependencies.compile "org.fake:fake-dep:1.+"
+        }
+        assertResolvedVersion("1.3.0-beta0", project)
+    }
 }

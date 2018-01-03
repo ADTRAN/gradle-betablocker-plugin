@@ -16,7 +16,7 @@
 package com.adtran
 
 class BetablockerPluginExtension {
-    Boolean enabled = true
+    def enabled = true // boolean or callable
     List<String> whitelist = []
     List<String> rejectedVersions = ["alpha", "beta", "m", "snap", "latest"]
 }

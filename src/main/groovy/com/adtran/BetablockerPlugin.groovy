@@ -30,8 +30,16 @@ class BetablockerPlugin implements Plugin<Project> {
         }
     }
 
+    private boolean isEnabled() {
+        if (project.betablocker.enabled instanceof GroovyCallable) {
+            project.betablocker.enabled()
+        } else {
+            project.betablocker.enabled
+        }
+    }
+
     private void configureComponentSelection() {
-        if (project.betablocker.enabled) {
+        if (isEnabled()) {
             project.configurations.each {
                 it.resolutionStrategy.componentSelection.all { screen(it) }
             }
