@@ -31,11 +31,8 @@ class BetablockerPlugin implements Plugin<Project> {
     }
 
     private boolean isEnabled() {
-        if (project.betablocker.enabled instanceof GroovyCallable) {
-            project.betablocker.enabled()
-        } else {
-            project.betablocker.enabled
-        }
+        def enabled = project.betablocker.getEnabled()
+        (enabled instanceof GroovyCallable) ? enabled() : enabled
     }
 
     private void configureComponentSelection() {
