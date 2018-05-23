@@ -1,4 +1,32 @@
 language: java
 jdk:
   - openjdk8
-script: ./gradlew build cobertura
+before_install:
+  - git fetch --unshallow || true
+  - git config user.email "delivery@adtran.com"
+  - git config user.name "adtran-automation"
+  - git config url.https://.insteadOf git://
+  - git checkout -qf $TRAVIS_BRANCH
+
+install:
+  - echo "skip default gradlew assemble"
+script: ./gradlew build cobertura -Dorg.ajoberstar.grgit.auth.username=${GH_TOKEN} -Dorg.ajoberstar.grgit.auth.password
+deploy:
+  provider: script
+  script: ./gradlew release -Dorg.ajoberstar.grgit.auth.username=${GH_TOKEN} -Dorg.ajoberstar.grgit.auth.password
+  skip_cleanup: true
+  on:
+    branch: master
+env:
+  global:
+  - TERM=dumb
+  - BINTRAY_USER=adtran-automation
+  - MAVEN_USER=adtran
+  - MAVEN_SYNC=true
+  - secure: WxPWzZ4vRrIGWQviDObDc2TaPwl/Omn9RIoEdqNbzsd8PfaeGH5XL8K7U6vi4EmKLxwE0huNDSkom2QsD8XhIU/bHNZA4h4bNCfQxop9M55I+ikC7Pys9aNWVP7UBpT8H3sE5dItO6tuzKq/G89n1ih53Fnn5V7jl2zB254K5cJZ21Jx00U60hNJuVvqDF+s4ebLnVkt0s0MGcZeVv8JKrBHtkyt5iUrW711gkJ585Ovf5gvMe58pZFkXGoo/JRK4eSbsex9x7CzC3/wpLLbkeNUHiRKm/OPkcyC39sgvRklMf8ikGItGeT9FPNib7qqZXAUkk4tfVfR+wT805f7m/PPEQWiyz2egMebdT2dE62szpM3NyuxSBmInBDDh4GGSOXReDZAKQ1kdDYU128x4ANbeIlRQDbjoEXSq1pFC7oJszO4B+KOCk+AM9OD/LerFSH6uvQg/x7WNd6cqdSzdXFQkUFndhz7dQpwgKn9ObKOQHo4YxnGqUXoDRM+mQOgnCeZKGktwXx9bCifaTaeTa/QdI/cZ2++txTV3Zy5Y9t0e1SK/Q2rFL0lOr8nSNL+oXoYdO829RzQs4SLD6Nktxp9LMauxcwWeeqeEUMHDzXgAkbmGuMcs9wmdJZA8wJDYC9h/p+0s5w1j231Jj/ziCYxjnoZoVpKCCUGRSaXH74=
+  - secure: KAi2DL/TuMVI3f3StZP2GtIuRcHmt1BxPzNgagvU9cmpkMrp/Ua+ZRTk5nhDOla5BsKxQNxtPUdSNvAhPfwcLyLWSc5QlJK5zzqJ1EPqh/p9Sn+DYf8gfZHVlzRWjHBJwPVtn7d24V/9m6FnbvzrFVKeQV+u9jucVUPm5N/7VXqjgT2ZzEi/TH6/5Gm2NAcIldz52PZariMVFnm579nZ7mjXbzW12wXC/sY+ZhDwkHCc94cdEna9AN4vIglkQi4DK2VKTa34MTmV1UnWobQ2J0xf5/mbv+zncXXcZMWn+9L4iBKFfMX+jzYZE7i2XsV3pbvYFgVl+DbNCCcF9N12+ml7imp1LSe2Mlm0HEVtDEz/e43whCXBWW9NLZ1mRqVmnSqG75xnYi2VIsjugeaxqlU38WAY4ctkgAFcQcG3RMZQPeMQFUtpe8/Oq6U8+Ilt0i35bDcJXT2FZe1HL55qfm5eXQ0jaUtLOF6GPgSrCrXDw+GEvQDZMLkpTs9a7+mNBhwuntmO1h9xzQpCplk44RA1RVmsQ6ocNkO3zSNtBRI+zP+R6QVT+SHyS1URL0d8qcgWJ8buG8QGvL4T0C6TO6Lfk+3X1+kvIser4DyTQe4JHD7yFkFmi1mgMsPPQ/gOigFBZk2G8OsYPIxfem9UoXrPR7Gx9DGGKBGQrnK00iM=
+  - secure: qqffgF2f43XzFKRFjDxwV0MFzk6i4maOMxiwFI78X2THNYhnA9ZRSVLNDI5QmiRc3KiRkD+bXbpMheeAdS41eIDvYE0dH24xJBF//lWcBisVUl6yjix+DUVAZXKX3tlVnPiiinHQQYMvWls0iehnIDEGaCkpEJ2Y34xqccKQJ88dk8Fhw40whgEz0Wqn6C4Iqx/B6vIrpKZgFIVSfQrzPHJJjKG+HVT8GEvoEHK1+rrrm7y2tn2//PIEdxSDTYDjWNUL6NMreoR1dDF4d4wTONiQ+JR3XpclZd3SQGln+9qKQzGmp9oM9fvNywXsNBKcvbNbXifUp4HRO3fWlx0mDQwX28UfercJqYwCkBoTu4prsd9dJLXotK9ypYo2W2cvvA1SzyWfFlQppUlBT9yE7EPygXpyTqyDHjEJCLflgkw5uRr8oyHKk5P7FCMppH8uNtohNMylX1zxZ0HG2Hn6PRPaPdxa8Rqk+l3PjW1SbHpKQAmG9wlyfQ9SPtOm5mmmzahTkqn43AoXvFAeve2YyJZOmFOXO8DR/dfTLVszI05LJuRtk9jPklJKXT46gnXM/FMnuxl+tfWwUpfofLWaxHuTHMH0gG7zKaXPzh28kC7JK3dob8nlHv2XfpFpqSz+oLHDy7qbaaWnuiY82/zbqjZ6UDDtMQrS78T0gw3gZ4Y=
+  - secure: lrWdvqBBRMndrJ8/BTiHhPlVbcOqlBpMm6FQKyrFZq/RcbAqs2YMB/Bu84mgPgbxpgboMC2uKF/Yy6lSZz/GQN8W4y4Mp2+R75tzF9BXrfPNimgy5eRg98dV93LxO+aWP05A0P6wptC7TC74Owt5OgKu1FW+CFNDkt0f6CjL6HWKb193r6J4WuVsPXpam5wr5PIWKMPJtB8yjg7tf7WiFb+CgNcbnKrmlKvqEb9s9/7SDAoQI43PJDuzlRNyACAJlxFhA+TQMPV+YVZHzvCOD997oi+xtDrRhrNcBPEi4s9Q03TJ/ECFq2wBbxpk5uSUiwAbhPcMzcNTCjqjniqxYbkgnM7aGLgNK5gg+2SKBKuaFwp7vTsz7XgkmxW1XqDhJfqtjq+Y9/rgFpqmxsGfkmurdlqtul2JaVBjZVLxcR3ZrvvwUIqhSDSG8VZR6CsO/SLsjkZHfdud6flzfZT9EbeyeHM5D1/dZ578DWI5cNtTtWgRNJYR5uuphmOxh2lajbjRibe0y0b12v6oowoMgOQzJqQQ4bpccvipxZrWRC12siszwNmGOx+Wc0HY3NHJcvcvMtohQYgDdQjQwJ6mr3UPCKaX/ARucob71S8TpL8dw5cgUwqASQ9VZ8hb/BEC09Kx6D0gVfvj6eDJimGOhXfBKfSNMwRUcQm6hpIt3HA=
+branches:
+  except:
+  - "/^v\\d+\\.\\d+\\.\\d+$/"
