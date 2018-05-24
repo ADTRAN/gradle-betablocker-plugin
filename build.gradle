@@ -35,10 +35,12 @@ plugins {
     id "maven"
     id "java-gradle-plugin"
     id "com.gradle.plugin-publish" version "0.9.7"
+    id "com.jfrog.bintray" version "1.8.0"
+    id "maven-publish"
+    id "de.gliderpilot.semantic-release" version "1.4.0"
 }
 
 group = artifact_group
-version = "${artifact_version}.${build_number}"
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
@@ -84,38 +86,45 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
-uploadArchives {
-    repositories.mavenDeployer {
-        repository(url: repo_url) {
-            authentication(userName: repo_username, password: repo_password)
+def pomConfig = {
+    scm {
+        connection 'scm:git:https://github.com/ADTRAN/gradle-betablocker-plugin.git'
+        developerConnection 'scm:git:https://github.com/ADTRAN/gradle-betablocker-plugin.git'
+        url 'https://github.com/ADTRAN/gradle-betablocker-plugin'
+    }
+
+    licenses {
+        license {
+            name 'Apache License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
         }
+    }
 
-        pom.project {
-            name "$artifact_group:$artifact_name"
-            packaging 'jar'
-            description 'Gradle plugin to prevent non-stable versions of dependencies from being inadvertently consumed by a project'
-            url 'https://github.com/ADTRAN/gradle-betablocker-plugin'
+    developers {
+        developer {
+            name 'Nathan Alderson'
+            email 'nathan.alderson@adtran.com'
+            organization 'ADTRAN, Inc.'
+            organizationUrl 'http://www.adtran.com/'
+        }
+    }
+}
 
-            scm {
-                connection 'scm:git:https://github.com/ADTRAN/gradle-betablocker-plugin.git'
-                developerConnection 'scm:git:https://github.com/ADTRAN/gradle-betablocker-plugin.git'
-                url 'https://github.com/ADTRAN/gradle-betablocker-plugin'
-            }
-
-            licenses {
-                license {
-                    name 'Apache License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                }
-            }
-
-            developers {
-                developer {
-                    name 'Nathan Alderson'
-                    email 'nathan.alderson@adtran.com'
-                    organization 'ADTRAN, Inc.'
-                    organizationUrl 'http://www.adtran.com/'
-                }
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            groupId "$groupId"
+            artifactId 'betablocker-plugin'
+            version "$version"
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'Gradle plugin to prevent non-stable versions of dependencies from being inadvertently consumed by a project')
+                root.appendNode('name', "$artifact_group:$artifact_name")
+                root.appendNode('url', 'https://github.com/ADTRAN/gradle-betablocker-plugin')
+                root.children().last() + pomConfig
             }
         }
     }
@@ -153,3 +162,68 @@ def configureTestTask(Task task) {
     }
 }
 configureTestTask(project.tasks.test)
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    pkg {
+        repo = "maven"
+        name = 'betablocker-plugin'
+        userOrg = 'adtran'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/ADTRAN/gradle-betablocker-plugin.git'
+        websiteUrl = 'https://github.com/ADTRAN/gradle-betablocker-plugin.git'
+        issueTrackerUrl = 'https://github.com/ADTRAN/gradle-betablocker-plugin/issues'
+        labels = ['gradle', 'dependencies']
+        publications = ['mavenPublication']
+        publish = true
+        version {
+          name = "${project.version}"
+          vcsTag = "${project.version}"
+          released = new Date()
+          attributes = [
+            'gradle-plugin': 'com.adtran.betablocker-plugin:com.adtran:betablocker-plugin'
+          ]
+          gpg {
+              sign = true
+              passphrase = System.getenv('GPG_PASS')
+          }
+          mavenCentralSync {
+              sync = System.env['MAVEN_SYNC']?.toBoolean() ?: false
+              user = System.getenv('MAVEN_USER')
+              password = System.getenv('MAVEN_PASS')
+          }
+        }
+    }
+}
+
+
+project.ext.ghToken = project.hasProperty('ghToken') ? project.getProperty('ghToken') : System.getenv('GH_TOKEN') ?: null
+semanticRelease {
+    repo {
+        ghToken = project.ghToken
+        releaseAsset jar
+        releaseAsset sourcesJar, name: "sources.jar", label: 'sources jar', contentType: 'application/zip'
+        releaseAsset javadocJar, name: "javadoc.jar", label: 'javadoc jar', contentType: 'application/zip'
+    }
+}
+
+publish.dependsOn bintrayUpload
+
+prepare.doFirst  {
+  //We get grgit for free because we are using semantic-release
+  if(grgit.branch.getCurrent().name == "master" && version.toString().endsWith('-SNAPSHOT') && project.gradle.startParameter.taskNames.find { it == 'release' }) {
+    println """We are on the master branch, but the version is ending in -SNAPSHOT. The version only gets -SNAPSHOT dropped if:
+      * We are on the master branch
+      * The repo is clean
+      * There is a commit prefixed with 'fix:' or 'feat:' since the last release
+
+      If none of those things happened on the master branch then we will still land in the snapshot version strategy and have a version number with -SNAPSHOT.
+
+      See here for more details:
+
+      https://github.com/tschulte/gradle-semantic-release-plugin
+      """
+      throw new GradleException('Releasing -SNAPSHOT version on master branch')
+  }
+}
