@@ -48,7 +48,7 @@ To configure the plugin, add a block like the following to your ``build.gradle``
     betablocker {
       enabled true
       whitelist = []
-      rejectedVersions = ["alpha", "beta", "m", "snap", "latest"]
+      rejectedVersions = ["alpha", "beta", "m", "snap", "latest", "rc"]
     }
 
 These properties are described in the following table:
@@ -61,7 +61,8 @@ Property               Type           Default                   Description
                                                                 of an artifact will prevent the plugin from rejecting
                                                                 any versions
 ``rejectedVersions``   List<String>   ``["alpha", "beta", "m",  A list of strings which if present in the version of an
-                                      "snap", "latest"]``       artifact will cause it to be rejected (case insensitive)
+                                      "snap", "latest",         artifact will cause it to be rejected (case insensitive).
+                                      "rc"]``
 =====================  =============  ========================  ========================================================
 
 License
