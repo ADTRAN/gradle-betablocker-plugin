@@ -56,7 +56,7 @@ class TestBetablockerPlugin extends GroovyTestCase {
             betablocker.whitelist = ["fake-dep"]
             dependencies.compile "org.fake:fake-dep:1.+"
         }
-        assertResolvedVersion("1.3.0-beta0", project)
+        assertResolvedVersion("1.3.0-99273a4", project)
     }
 
     void testAllowsNonBeta() {
@@ -66,12 +66,30 @@ class TestBetablockerPlugin extends GroovyTestCase {
 
     void testRejectedVersionsOverride() {
         Project project = createProject {
+            betablocker.rejectedVersions = ["beta"]
+            betablocker.rejectedVersionPatterns = []
+            dependencies.compile "org.fake:fake-dep:1.+"
+        }
+        assertResolvedVersion("1.3.0-99273a4", project)
+    }
+
+    void testRejectedVersionsRegexpOverride() {
+        Project project = createProject {
+            betablocker.rejectedVersions = []
+            betablocker.rejectedVersionPatterns = [".*-[a-f0-9]{7}"]
+            dependencies.compile "org.fake:fake-dep:1.+"
+        }
+        assertResolvedVersion("1.3.0-beta0", project)
+    }
+
+    void testBothOverride() {
+        Project project = createProject {
             betablocker.rejectedVersions = ["0"]
+            betablocker.rejectedVersionPatterns = [".*-[a-f0-9]{7}"]
             dependencies.compile "org.fake:fake-dep:1.+"
         }
         assertResolvedVersion("1.2.3", project)
     }
-
     void testResolveAllowBeta() {
         Project project = createProject {
             betablocker.rejectedVersions = []
@@ -85,7 +103,7 @@ class TestBetablockerPlugin extends GroovyTestCase {
             project.betablocker.enabled = false
             dependencies.compile "org.fake:fake-dep:1.+"
         }
-        assertResolvedVersion("1.3.0-beta0", project)
+        assertResolvedVersion("1.3.0-99273a4", project)
     }
 
     void testDisableCallable() {
@@ -93,6 +111,6 @@ class TestBetablockerPlugin extends GroovyTestCase {
             project.betablocker.enabled = { false }
             dependencies.compile "org.fake:fake-dep:1.+"
         }
-        assertResolvedVersion("1.3.0-beta0", project)
+        assertResolvedVersion("1.3.0-99273a4", project)
     }
 }

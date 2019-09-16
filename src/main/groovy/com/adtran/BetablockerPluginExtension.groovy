@@ -19,4 +19,5 @@ class BetablockerPluginExtension {
     def enabled = true // boolean or callable
     List<String> whitelist = []
     List<String> rejectedVersions = ["alpha", "beta", "m", "snap", "latest", "rc"]
+    List<String> rejectedVersionPatterns = [".*-[a-f0-9]{7}"]
 }
