@@ -53,6 +53,11 @@ class BetablockerPlugin implements Plugin<Project> {
                     selection.reject("betablocker rejecting $selection.candidate.displayName (contains $it)")
                 }
             }
+            project.betablocker.rejectedVersionPatterns.each {
+                if (selection.candidate.version.toLowerCase().matches(it)) {
+                    selection.reject("betablocker rejecting $selection.candidate.displayName (matches pattern $it)")
+                }
+            }
         } else {
             project.logger.debug("betablocker allowing $selection.candidate.displayName (whitelisted)")
         }

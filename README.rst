@@ -49,21 +49,25 @@ To configure the plugin, add a block like the following to your ``build.gradle``
       enabled true
       whitelist = []
       rejectedVersions = ["alpha", "beta", "m", "snap", "latest", "rc"]
+      rejectedVersionPatterns = [".*-[a-f0-9]{7}"]
     }
 
 These properties are described in the following table:
 
-=====================  =============  ========================  ========================================================
-Property               Type           Default                   Description
-=====================  =============  ========================  ========================================================
-``enabled``            Boolean        ``true``                  Set to false to disable the plugin entirely
-``whitelist``          List<String>   ``[]``                    A list of strings which if present in the display name
-                                                                of an artifact will prevent the plugin from rejecting
-                                                                any versions
-``rejectedVersions``   List<String>   ``["alpha", "beta", "m",  A list of strings which if present in the version of an
-                                      "snap", "latest",         artifact will cause it to be rejected (case insensitive).
-                                      "rc"]``
-=====================  =============  ========================  ========================================================
+===========================  =============  ========================  ========================================================
+Property                     Type           Default                   Description
+===========================  =============  ========================  ========================================================
+``enabled``                  Boolean        ``true``                  Set to false to disable the plugin entirely
+``whitelist``                List<String>   ``[]``                    A list of strings which if present in the display name
+                                                                      of an artifact will prevent the plugin from rejecting
+                                                                      any versions
+``rejectedVersions``         List<String>   ``["alpha", "beta", "m",  A list of strings which if present in the version of an
+                                            "snap", "latest",         artifact will cause it to be rejected (case insensitive).
+                                            "rc"]``
+``rejectedVersionPatterns``  List<String>   ``[".*-[a-f0-9]{7}"]``    A list of regular expression patterns which will cause
+                                                                      a dependency to be rejected on match (case insensitive
+                                                                      / lower case).
+===========================  =============  ========================  ========================================================
 
 License
 =======
