@@ -1,7 +1,7 @@
 .. image:: https://api.bintray.com/packages/adtran/maven/betablocker-plugin/images/download.svg
   :target: https://bintray.com/adtran/maven/betablocker-plugin/_latestVersion
   :alt: download
-.. image:: https://travis-ci.org/ADTRAN/gradle-betablocker-plugin.svg?branch=master
+.. image:: https://travis-ci.org/ADTRAN/gradle-betablocker-plugin.svg?branch=main
   :target: https://travis-ci.org/ADTRAN/gradle-betablocker-plugin
 
 ==================
