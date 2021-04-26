@@ -36,6 +36,7 @@ plugins {
     id "com.gradle.plugin-publish" version "0.14.0"
     id "maven-publish"
     id "de.gliderpilot.semantic-release" version "1.4.1"
+    id "signing"
 }
 
 group = artifact_group
@@ -151,6 +152,13 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenPublication
 }
 
 groovydoc.overviewText = resources.text.fromString('Please see <a href="README.rst">README.rst</a>')
