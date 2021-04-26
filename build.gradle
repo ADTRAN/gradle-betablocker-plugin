@@ -23,7 +23,6 @@ buildscript {
 
     dependencies {
         classpath "com.netflix.nebula:gradle-dependency-lock-plugin:11.+"
-        classpath "net.saliman:gradle-cobertura-plugin:4.+"
         classpath "com.gradle.publish:plugin-publish-plugin:0.14.0"
     }
 }
