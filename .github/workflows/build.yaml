@@ -43,7 +43,7 @@ jobs:
         distribution: 'adopt'
     - name: Deploy
       run: >
-        ./gradlew release
+        ./gradlew publish
         -Dorg.ajoberstar.grgit.auth.username=${{ secrets.GITHUB_TOKEN }}
         -Dorg.ajoberstar.grgit.auth.password
         -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
