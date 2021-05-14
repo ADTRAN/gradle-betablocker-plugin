@@ -30,6 +30,9 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     environment: deployment
+    env:
+        ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+        ORG_GRADLE_PROJECT_signingKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
     steps:
     - uses: actions/checkout@v2
       with:
@@ -48,6 +51,3 @@ jobs:
         -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
         -PossrhUsername=${{ secrets.OSSRH_USERNAME }}
         -PossrhPassword=${{ secrets.OSSRH_PASSWORD }}
-        -PsigningKeyId=${{ secrets.SIGNING_KEY_ID }}
-        -PsigningKey=${{ secrets.SIGNING_KEY }}
-        -PsigningKeyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}
