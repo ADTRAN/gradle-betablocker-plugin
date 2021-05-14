@@ -22,22 +22,20 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.netflix.nebula:gradle-dependency-lock-plugin:4.+"
-        classpath "net.saliman:gradle-cobertura-plugin:2.+"
-        classpath "com.gradle.publish:plugin-publish-plugin:0.10.0"
+        classpath "com.netflix.nebula:gradle-dependency-lock-plugin:11.+"
+        classpath "com.gradle.publish:plugin-publish-plugin:0.14.0"
     }
 }
 
 plugins {
-    id "nebula.dependency-lock" version "4.9.1"
-    id "net.saliman.cobertura" version "2.5.2"
+    id "nebula.dependency-lock" version "11.1.3"
+    id "net.saliman.cobertura" version "4.0.0"
     id "groovy"
-    id "maven"
     id "java-gradle-plugin"
-    id "com.gradle.plugin-publish" version "0.10.0"
-    id "com.jfrog.bintray" version "1.8.0"
+    id "com.gradle.plugin-publish" version "0.14.0"
     id "maven-publish"
-    id "de.gliderpilot.semantic-release" version "1.4.0"
+    id "de.gliderpilot.semantic-release" version "1.4.1"
+    id "signing"
 }
 
 group = artifact_group
@@ -81,9 +79,9 @@ repositories {
 }
 
 dependencies {
-    compile localGroovy()
+    implementation localGroovy()
 
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
 def pomConfig = {
@@ -110,30 +108,6 @@ def pomConfig = {
     }
 }
 
-publishing {
-    publications {
-        mavenPublication(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-            groupId "$groupId"
-            artifactId 'betablocker-plugin'
-            version "$version"
-            pom.withXml {
-                def root = asNode()
-                root.appendNode('description', 'Gradle plugin to prevent non-stable versions of dependencies from being inadvertently consumed by a project')
-                root.appendNode('name', "$artifact_group:$artifact_name")
-                root.appendNode('url', 'https://github.com/ADTRAN/gradle-betablocker-plugin')
-                root.children().last() + pomConfig
-            }
-        }
-    }
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = "3.5.1"
-}
-
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
@@ -143,6 +117,47 @@ task javadocJar(type: Jar) {
     classifier = 'javadoc'
     from groovydoc
     from 'README.rst'
+}
+
+publishing {
+    repositories {
+        maven {
+            def releaseRepo = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotRepo = "https://oss.sonatype.org/content/repositories/snapshots/"
+            url = version.toString().endsWith('-SNAPSHOT') ? releaseRepo: snapshotRepo
+            credentials {
+                username = findProperty('ossrhUsername')
+                password = findProperty('ossrhPassword')
+            }
+        }
+    }
+
+    publications {
+        mavenPublication(MavenPublication) {
+            afterEvaluate {
+                from components.java
+                artifact sourcesJar
+                artifact javadocJar
+                groupId "$groupId"
+                artifactId 'betablocker-plugin'
+                version "$version"
+                pom.withXml {
+                    def root = asNode()
+                    root.appendNode('description', 'Gradle plugin to prevent non-stable versions of dependencies from being inadvertently consumed by a project')
+                    root.appendNode('name', "$artifact_group:$artifact_name")
+                    root.appendNode('url', 'https://github.com/ADTRAN/gradle-betablocker-plugin')
+                    root.children().last() + pomConfig
+                }
+            }
+        }
+    }
+}
+
+signing {
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenPublication
 }
 
 groovydoc.overviewText = resources.text.fromString('Please see <a href="README.rst">README.rst</a>')
@@ -163,41 +178,6 @@ def configureTestTask(Task task) {
 }
 configureTestTask(project.tasks.test)
 
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    pkg {
-        repo = "maven"
-        name = 'betablocker-plugin'
-        userOrg = 'adtran'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/ADTRAN/gradle-betablocker-plugin.git'
-        websiteUrl = 'https://github.com/ADTRAN/gradle-betablocker-plugin.git'
-        issueTrackerUrl = 'https://github.com/ADTRAN/gradle-betablocker-plugin/issues'
-        labels = ['gradle', 'dependencies']
-        publications = ['mavenPublication']
-        publish = true
-        version {
-          name = "${project.version}"
-          vcsTag = "${project.version}"
-          released = new Date()
-          attributes = [
-            'gradle-plugin': 'com.adtran.betablocker-plugin:com.adtran:betablocker-plugin'
-          ]
-          gpg {
-              sign = true
-              passphrase = System.getenv('GPG_PASS')
-          }
-          mavenCentralSync {
-              sync = System.env['MAVEN_SYNC']?.toBoolean() ?: false
-              user = System.getenv('MAVEN_USER')
-              password = System.getenv('MAVEN_PASS')
-          }
-        }
-    }
-}
-
-
 project.ext.ghToken = project.hasProperty('ghToken') ? project.getProperty('ghToken') : System.getenv('GH_TOKEN') ?: null
 semanticRelease {
     repo {
@@ -208,7 +188,6 @@ semanticRelease {
     }
 }
 
-publish.dependsOn bintrayUpload
 publish.dependsOn publishPlugins
 
 prepare.doFirst  {
