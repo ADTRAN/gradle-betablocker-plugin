@@ -180,6 +180,9 @@ configureTestTask(project.tasks.test)
 
 project.ext.ghToken = project.hasProperty('ghToken') ? project.getProperty('ghToken') : System.getenv('GH_TOKEN') ?: null
 semanticRelease {
+    releaseBranches {
+        include 'main'
+    }
     repo {
         ghToken = project.ghToken
         releaseAsset jar
