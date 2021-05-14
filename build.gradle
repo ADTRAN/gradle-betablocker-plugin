@@ -124,6 +124,7 @@ publishing {
         maven {
             def releaseRepo = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
             def snapshotRepo = "https://oss.sonatype.org/content/repositories/snapshots/"
+            name = "ossrh"
             url = version.toString().endsWith('-SNAPSHOT') ? releaseRepo: snapshotRepo
             credentials {
                 username = findProperty('ossrhUsername')
@@ -133,7 +134,7 @@ publishing {
     }
 
     publications {
-        mavenPublication(MavenPublication) {
+        betablocker(MavenPublication) {
             afterEvaluate {
                 from components.java
                 artifact sourcesJar
@@ -157,7 +158,7 @@ signing {
     def signingKey = findProperty("signingKey")
     def signingPassword = findProperty("signingKeyPassword")
     useInMemoryPgpKeys(signingKey, signingPassword)
-    sign publishing.publications.mavenPublication
+    sign publishing.publications.betablocker
 }
 
 groovydoc.overviewText = resources.text.fromString('Please see <a href="README.rst">README.rst</a>')
