@@ -5,7 +5,6 @@ on: [push, pull_request]
 env:
   MAVEN_USER: adtran
   MAVEN_SYNC: true
-  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
@@ -51,3 +50,5 @@ jobs:
         -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
         -PossrhUsername=${{ secrets.OSSRH_USERNAME }}
         -PossrhPassword=${{ secrets.OSSRH_PASSWORD }}
+    - name: Tag
+      run: ./gradlew tag

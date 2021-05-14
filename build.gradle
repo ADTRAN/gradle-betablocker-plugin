@@ -34,11 +34,11 @@ plugins {
     id "java-gradle-plugin"
     id "com.gradle.plugin-publish" version "0.14.0"
     id "maven-publish"
-    id "de.gliderpilot.semantic-release" version "1.4.1"
     id "signing"
 }
 
 group = artifact_group
+version = get_version()
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
@@ -178,35 +178,34 @@ def configureTestTask(Task task) {
 }
 configureTestTask(project.tasks.test)
 
-project.ext.ghToken = project.hasProperty('ghToken') ? project.getProperty('ghToken') : System.getenv('GH_TOKEN') ?: null
-semanticRelease {
-    releaseBranches {
-        include 'main'
-    }
-    repo {
-        ghToken = project.ghToken
-        releaseAsset jar
-        releaseAsset sourcesJar, name: "sources.jar", label: 'sources jar', contentType: 'application/zip'
-        releaseAsset javadocJar, name: "javadoc.jar", label: 'javadoc jar', contentType: 'application/zip'
-    }
-}
-
 publish.dependsOn publishPlugins
 
-prepare.doFirst  {
-  //We get grgit for free because we are using semantic-release
-  if(grgit.branch.getCurrent().name == "main" && version.toString().endsWith('-SNAPSHOT') && project.gradle.startParameter.taskNames.find { it == 'release' }) {
-    println """We are on the main branch, but the version is ending in -SNAPSHOT. The version only gets -SNAPSHOT dropped if:
-      * We are on the main branch
-      * The repo is clean
-      * There is a commit prefixed with 'fix:' or 'feat:' since the last release
+def get_version() {
+    def cmd = ["git", "tag", "--sort=-version:refname", "-l", "v$artifact_version*"]
+    def proc = cmd.execute()
+    proc.waitFor()
+    assert(proc.exitValue() == 0)
+    def latest = proc.text.split("\n")[0]
+    def tokens = latest?.tokenize(".")
+    def bugfix = tokens ? tokens?.last()?.toInteger() : -1
+    def suffix = System.getenv("CI") ? "" : "dev0"
+    "${artifact_version}.${bugfix+1}${suffix}"
+}
 
-      If none of those things happened on the main branch then we will still land in the snapshot version strategy and have a version number with -SNAPSHOT.
+task printVersion() { doLast { println(version) } }
 
-      See here for more details:
-
-      https://github.com/tschulte/gradle-semantic-release-plugin
-      """
-      throw new GradleException('Releasing -SNAPSHOT version on main branch')
+task gitTag() {
+  description = "Add and push a git tag with the project's version (only in CI)."
+  if(System.getenv("CI")) {
+    doLast {
+      def cmd = ["git", "tag", "-m", "automatic tag for $version", "v${version}"]
+      def proc = cmd.execute()
+      proc.waitFor()
+      assert(proc.exitValue() == 0)
+      cmd = ["git", "push", "v${version}"]
+      proc = cmd.execute()
+      proc.waitFor()
+      assert(proc.exitValue() == 0)
+    }
   }
 }
