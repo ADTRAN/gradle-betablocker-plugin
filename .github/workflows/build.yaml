@@ -42,13 +42,15 @@ jobs:
         java-version: '8'
         distribution: 'adopt'
     - name: Publish to plugins.gradle.org
+      id: publish_to_gradle
       run: >
         ./gradlew publishPlugins
         -Dorg.ajoberstar.grgit.auth.username=${{ secrets.GITHUB_TOKEN }}
         -Dorg.ajoberstar.grgit.auth.password
         -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }}
         -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }}
-    - name: Publish to plugins.gradle.org
+    - name: Publish to OSSRH
+      id: publish_to_ossrh
       run: >
         ./gradlew publishBetablockerPublicationToOssrhRepository
         -Dorg.ajoberstar.grgit.auth.username=${{ secrets.GITHUB_TOKEN }}
@@ -56,4 +58,7 @@ jobs:
         -PossrhUsername=${{ secrets.OSSRH_USERNAME }}
         -PossrhPassword=${{ secrets.OSSRH_PASSWORD }}
     - name: Tag
+      if: >
+        steps.publish_to_gradle.conclusion == 'success' ||
+        steps.publish_to_ossrh.conclusion == 'success'
       run: ./gradlew tag
