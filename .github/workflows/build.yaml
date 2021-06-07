@@ -53,7 +53,6 @@ jobs:
       id: publish_to_ossrh
       run: >
         ./gradlew publishBetablockerPublicationToOssrhRepository
-        --info
         -Dorg.ajoberstar.grgit.auth.username=${{ secrets.GITHUB_TOKEN }}
         -Dorg.ajoberstar.grgit.auth.password
         -PossrhUsername=${{ secrets.OSSRH_USERNAME }}
@@ -65,5 +64,7 @@ jobs:
       run: |
         version=$(./gradlew --quiet printVersion)
         tag=v$version
+        git config --global user.name 'Github Actions'
+        git config --global user.email 'github-actions@users.noreply.github.com'
         git tag -m "automatic tag for $version" "$tag"
         git push origin "$tag"
