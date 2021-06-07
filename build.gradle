@@ -194,19 +194,3 @@ def get_version() {
 }
 
 task printVersion() { doLast { println(version) } }
-
-task gitTag() {
-  description = "Add and push a git tag with the project's version (only in CI)."
-  if(System.getenv("CI")) {
-    doLast {
-      def cmd = ["git", "tag", "-m", "automatic tag for $version", "v${version}"]
-      def proc = cmd.execute()
-      proc.waitFor()
-      assert(proc.exitValue() == 0)
-      cmd = ["git", "push", "v${version}"]
-      proc = cmd.execute()
-      proc.waitFor()
-      assert(proc.exitValue() == 0)
-    }
-  }
-}
