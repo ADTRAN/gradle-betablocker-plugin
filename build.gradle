@@ -125,7 +125,7 @@ publishing {
             def releaseRepo = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             def snapshotRepo = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
             name = "ossrh"
-            url = version.toString().endsWith('-SNAPSHOT') ? releaseRepo: snapshotRepo
+            url = version.toString().endsWith('-SNAPSHOT') ? snapshotRepo : releaseRepo
             credentials {
                 username = findProperty('ossrhUsername')
                 password = findProperty('ossrhPassword')

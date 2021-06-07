@@ -53,7 +53,7 @@ jobs:
       id: publish_to_ossrh
       run: >
         ./gradlew publishBetablockerPublicationToOssrhRepository
-        --debug
+        --info
         -Dorg.ajoberstar.grgit.auth.username=${{ secrets.GITHUB_TOKEN }}
         -Dorg.ajoberstar.grgit.auth.password
         -PossrhUsername=${{ secrets.OSSRH_USERNAME }}
