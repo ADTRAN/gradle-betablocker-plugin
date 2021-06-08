@@ -79,3 +79,23 @@ Contributing
 ============
 
 Issues and pull requests are welcome if you have bugs/suggestions/improvements!
+
+Publishing
+==========
+
+CI is managed with Github actions. Artifacts are published to `plugins.gradle.org`_ and `Maven
+Central`_. Publishing to Maven Central is done via OSSRH. After CI uploads the artifacts to
+OSSRH, a maintainer has to promote the build to Maven Central:
+
+1. Log in to the Nexus instance at https://s01.oss.sonatype.org/ as the ``adtran-maven`` user
+2. Click on "Staging Repositories" in the left-hand pane
+3. Select the new repository (artifact)
+4. Click "Close" in the toolbar
+5. Once it's closed (hit "Refresh" if needed), click "Release"
+6. It should show up in Maven Central eventually
+
+Official instructions here_.
+
+.. _plugins.gradle.org: https://plugins.gradle.org/plugin/com.adtran.betablocker-plugin
+.. _Maven Central: https://search.maven.org/artifact/com.adtran/betablocker-plugin
+.. _here: https://central.sonatype.org/publish/release/
